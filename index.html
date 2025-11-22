@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#0f172a">
-    <title>Gestor EduPlay 14.0</title>
+    <title>Gestor EduPlay 14.1</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/4207/4207247.png">
@@ -67,12 +67,10 @@
         .stat-num { font-size: 20px; font-weight: bold; display: block; } 
         .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* PERIOD SELECTOR FINANCE */
         .period-selector { display: flex; background: var(--border); border-radius: 8px; padding: 4px; margin-bottom: 15px; }
         .period-selector button { flex: 1; padding: 8px; border: none; border-radius: 6px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; }
         .period-selector button.active { background: var(--card); color: var(--text); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-        /* META MENSAL */
         .goal-container { margin-top: 15px; padding: 10px; background: #020617; border-radius: 10px; border: 1px solid var(--border); }
         .goal-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
         .goal-bar-bg { height: 12px; background: var(--border); border-radius: 6px; overflow: hidden; position: relative; }
@@ -99,12 +97,12 @@
 </head>
 <body>
 
-    <div id="visitor-banner">👤 MODO OPERADOR (RESTRIÇÃO ATIVA)</div>
+    <div id="visitor-banner">👤 MODO OPERADOR (BACKUP BLOQUEADO)</div>
 
     <div id="screen-login" style="position: fixed; inset:0; background: var(--bg); z-index: 999; display: flex; align-items: center; justify-content: center;">
         <div class="card text-center" style="width: 300px; padding: 30px;">
             <div style="font-size: 48px; margin-bottom: 10px;">🔒</div>
-            <h2 class="mb-4">EduPlay v14.0</h2>
+            <h2 class="mb-4">EduPlay v14.1</h2>
             <input type="password" inputmode="numeric" pattern="[0-9]*" id="pin-input" class="input text-center" maxlength="4" placeholder="••••" style="font-size: 24px; letter-spacing: 8px; font-weight: bold;">
             <button onclick="Login()" class="btn bg-blue">ACESSAR SISTEMA</button>
             <p class="text-xs text-muted mt-4" style="opacity:0.6">Dev: EBPrado</p>
@@ -165,15 +163,13 @@
 
         <div id="view-finance" class="hidden">
             <h2 class="mb-4">Análise Financeira</h2>
-            
             <div class="period-selector">
                 <button id="period-month" class="active" onclick="SetFinMode('month')">Mensal</button>
                 <button id="period-year" onclick="SetFinMode('year')">Anual</button>
             </div>
-
             <div class="card flex justify-between p-2 mb-4 items-center">
                 <button onclick="ChangeTime(-1)" class="btn bg-slate btn-sm" style="width:40px">◀</button>
-                <span class="font-bold" id="fin-label" style="font-size:16px">...</span>
+                <span class="font-bold" id="fin-month-label" style="font-size:16px">...</span>
                 <button onclick="ChangeTime(1)" class="btn bg-slate btn-sm" style="width:40px">▶</button>
             </div>
             
@@ -213,7 +209,7 @@
             <div class="card"><h3 class="mb-2 text-purple-400 text-xs uppercase font-bold">Backup & Segurança</h3><div class="flex mb-2"><button onclick="ExportData()" class="btn bg-blue" id="btn-download" style="flex:1">💾 Baixar Backup</button><button onclick="ExportExcel()" class="btn bg-green" id="btn-excel" style="flex:1">📊 Excel (.csv)</button></div><input type="file" id="import-input" class="hidden" onchange="ImportData(this)"><button onclick="$('import-input').click()" class="btn bg-slate" id="btn-restore">📂 Restaurar Backup</button></div>
             <div class="card" style="border-color: var(--red);"><h3 class="mb-2 text-red-400 text-xs uppercase font-bold">Zona de Perigo</h3><button onclick="Nav('trash')" class="btn bg-red">🗑️ Abrir Lixeira</button></div>
             <div class="card"><h3 class="mb-2 text-xs uppercase font-bold text-muted">Preferências</h3><label>Chave PIX</label><input id="cfg-pix" class="input"><label>Meta Mensal (R$)</label><input id="cfg-goal" class="input" type="number"><div id="div-password"><label>Senha PIN</label><input id="cfg-pin" class="input" type="tel" maxlength="4"></div><label>Modelo Mensagem</label><textarea id="cfg-msg" class="input" style="height:80px"></textarea><div class="flex mt-2"><button onclick="SaveConfig()" class="btn bg-blue" id="btn-save-cfg">Salvar</button><button onclick="ResetMsg()" class="btn bg-slate" style="width:auto" id="btn-reset-msg">Reset</button></div></div>
-            <div style="text-align:center; opacity:0.5; margin-top:20px; font-size:11px">Dev: EBPrado • v14.0</div>
+            <div style="text-align:center; opacity:0.5; margin-top:20px; font-size:11px">Dev: EBPrado • v14.1</div>
         </div>
 
         <div id="view-trash" class="hidden">
@@ -251,7 +247,7 @@
         let cfg = JSON.parse(localStorage.getItem('edu_cfg') || JSON.stringify({ pin: "2632", msg: DEFAULT_MSG, pix: HARDCODED_PIX, lastBackup: Date.now(), monthlyGoal: 2000 }));
         
         let curId=null, filterMode='all', financeDate=new Date(), isVisitor=false;
-        let financeMode = 'month'; // month or year
+        let financeMode = 'month'; 
 
         const $ = id => document.getElementById(id);
         const ToBRL = v => Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -321,27 +317,27 @@
         function setFilter(m) { filterMode=m; RenderHome(); }
         function Nav(v) { document.querySelectorAll('[id^="view-"]').forEach(e => e.classList.add('hidden')); document.querySelectorAll('.nav-btn').forEach(e => e.classList.remove('active')); $(`view-${v}`).classList.remove('hidden'); const navMap = {'home':0,'finance':1,'expenses':2,'options':3,'trash':3}; if(document.querySelectorAll('.nav-btn')[navMap[v]]) document.querySelectorAll('.nav-btn')[navMap[v]].classList.add('active'); if(v==='home') RenderHome(); if(v==='finance') RenderFinance(); if(v==='expenses') RenderExp(); if(v==='trash') RenderTrash(); if(v==='options') { $('cfg-pix').value=cfg.pix; $('cfg-msg').value=cfg.msg; $('cfg-pin').value=cfg.pin; $('cfg-goal').value=cfg.monthlyGoal; RenderSrvList(); const l=localStorage.getItem('edu_logo'); if(l){$('header-logo').src=l;$('header-logo').classList.remove('hidden');} } }
 
-        // --- ACTIONS ---
-        function OpenForm() { if(isVisitor)return; curId=null; ['f-name','f-phone','f-obs','f-credit','f-price','f-cost'].forEach(i=>$(i).value=''); $('f-start').value=new Date().toISOString().split('T')[0]; AutoDate(); $('btn-delete-wrapper').classList.add('hidden'); RenderServerSelect(); CalcMargin(); Nav('form'); }
+        // --- ACTIONS (LIBERADO PARA VISITANTE) ---
+        function OpenForm() { curId=null; ['f-name','f-phone','f-obs','f-credit','f-price','f-cost'].forEach(i=>$(i).value=''); $('f-start').value=new Date().toISOString().split('T')[0]; AutoDate(); $('btn-delete-wrapper').classList.add('hidden'); RenderServerSelect(); CalcMargin(); Nav('form'); }
         function Edit(id) { curId=id; let c=db.find(x=>x.id==id); $('f-name').value=c.name; $('f-phone').value=c.phone; $('f-obs').value=c.obs||''; $('f-credit').value=c.credit||''; $('f-price').value=c.price; $('f-cost').value=c.cost; $('f-start').value=c.start; $('f-end').value=c.end; $('btn-delete-wrapper').classList.remove('hidden'); RenderServerSelect(c.srv); CalcMargin(); Nav('form'); }
         function CalcMargin() { let p=parseFloat($('f-price').value)||0, c=parseFloat($('f-cost').value)||0; $('f-margin').innerText = ToBRL(p-c); }
         function SaveClient() {
-            if(isVisitor)return; let name=$('f-name').value; let ph=$('f-phone').value;
+            let name=$('f-name').value; let ph=$('f-phone').value;
             if(!name || !ph) { $('f-name').classList.add('error'); $('f-phone').classList.add('error'); setTimeout(()=>{$('f-name').classList.remove('error');$('f-phone').classList.remove('error')},1000); return Toast('Preencha Nome e WhatsApp', 'red'); }
             let obj = { id:curId||Date.now(), name:name, phone:ph, srv:$('f-server-sel').value, obs:$('f-obs').value, credit:parseFloat($('f-credit').value)||0, price:parseFloat($('f-price').value)||0, cost:parseFloat($('f-cost').value)||0, start:$('f-start').value, end:$('f-end').value, pay:curId?db.find(x=>x.id==curId).pay:[], del:false, lastMsg:curId?db.find(x=>x.id==curId).lastMsg:null };
             if(curId) db=db.map(x=>x.id==curId?obj:x); else db.push(obj); Save(); Toast('Salvo!'); Nav('home');
         }
         function AutoDate() { $('f-end').value = AddMonth($('f-start').value, 1); }
-        function SoftDelete() { if(isVisitor)return; if(confirm('Mover para Lixeira?')){db.find(x=>x.id==curId).del=true;Save();Toast('Na Lixeira');Nav('home');} }
+        function SoftDelete() { if(confirm('Mover para Lixeira?')){db.find(x=>x.id==curId).del=true;Save();Toast('Na Lixeira');Nav('home');} }
 
         function PayModal(id) { curId=id; let c=db.find(x=>x.id==id); $('pm-id').value=id; $('pm-period').value='1'; $('pm-date').value=new Date().toISOString().split('T')[0]; if(c.credit>0){$('credit-alert').classList.remove('hidden');$('credit-val').innerText=c.credit;}else $('credit-alert').classList.add('hidden'); $('payment-modal').style.display='flex'; CalcPayment(); }
         function CalcPayment() { let c=db.find(x=>x.id==curId), p=parseInt($('pm-period').value), total=c.price*p, final=Math.max(0,total-(c.credit||0)), tCost=c.cost*p; $('pm-amount').value=final; $('pm-summary').innerHTML=`Receber: <b>${ToBRL(final)}</b> | Custo: <b>${ToBRL(tCost)}</b>`; }
         function ConfirmPayment() {
-            if(isVisitor)return; let c=db.find(x=>x.id==curId), amt=parseFloat($('pm-amount').value), date=$('pm-date').value, period=parseInt($('pm-period').value), method='PIX';
+            let c=db.find(x=>x.id==curId), amt=parseFloat($('pm-amount').value), date=$('pm-date').value, period=parseInt($('pm-period').value), method='PIX';
             if(!date)return; let tCost=c.cost*period, bruto=c.price*period; if(c.credit>0) c.credit=Math.max(0,c.credit-bruto);
             c.pay.push({d:date, a:amt, c:tCost, m:method}); let base=new Date(c.end), payDt=new Date(date); if(base<payDt) base=payDt; c.end=AddMonth(base.toISOString().split('T')[0], period);
             Save(); $('payment-modal').style.display='none'; Toast('Registrado!'); RenderHome();
-            if(confirm('Enviar recibo WhatsApp?')) { let msg = `🧾 *RECIBO*\nCliente: *${c.name}*\nServiço: *${c.srv}*\nValor: *${ToBRL(amt)}* (PIX)\nRef: *${period} Mês(es)*\nVencimento: *${FmtDate(c.end)}*\n✅ Pago!`; window.open(`https://wa.me/${c.phone}?text=${encodeURIComponent(msg)}`, '_blank'); }
+            if(confirm('Enviar recibo WhatsApp?')) { let msg = `🧾 *RECIBO*\nCliente: *${c.name}*\nValor: *${ToBRL(amt)}* (PIX)\nRef: *${period} Mês(es)*\nVencimento: *${FmtDate(c.end)}*\n✅ Pago!`; window.open(`https://wa.me/${c.phone}?text=${encodeURIComponent(msg)}`, '_blank'); }
         }
         function OpenHistory(id) { let c=db.find(x=>x.id==id), h=c.pay.length?'':'<div class="empty-state"><p>Sem histórico.</p></div>'; c.pay.sort((a,b)=>new Date(b.d)-new Date(a.d)).forEach(p=>{ h+=`<div class="hist-item"><div><b>${FmtDate(p.d)}</b><br><span class="text-xs text-muted">PIX</span></div><span class="text-green-400 font-bold">${ToBRL(p.a)}</span></div>`; }); $('hist-list').innerHTML=h; $('hist-title').innerText=c.name; $('history-modal').style.display='flex'; }
 
@@ -387,15 +383,15 @@
             let h=''; Object.keys(sMap).forEach(k=>{ let p=sMap[k].r-sMap[k].c; h+=`<div class="flex justify-between p-2 mb-1 bg-slate" style="border-radius:4px;font-size:12px"><span>${k}</span><span style="color:${p>=0?'var(--green)':'var(--red)'}">${ToBRL(p)}</span></div>`; }); $('fin-servers').innerHTML=h;
         }
 
-        function AddExpense(){ if(isVisitor)return; let d=$('exp-desc').value, a=parseFloat($('exp-amt').value), dt=$('exp-date').value; if(d&&a&&dt){exp.push({id:Date.now(),d:dt,a:a,desc:d});Save();$('exp-desc').value='';$('exp-amt').value='';RenderExp();Toast('Salvo');} }
+        function AddExpense(){ let d=$('exp-desc').value, a=parseFloat($('exp-amt').value), dt=$('exp-date').value; if(d&&a&&dt){exp.push({id:Date.now(),d:dt,a:a,desc:d});Save();$('exp-desc').value='';$('exp-amt').value='';RenderExp();Toast('Salvo');} }
         function RenderExp(){ let h=''; exp.sort((a,b)=>new Date(b.d)-new Date(a.d)).forEach(e=>{h+=`<div class="card flex justify-between p-2"><div><b>${e.desc}</b><br><span class="text-xs text-muted">${FmtDate(e.d)}</span></div><div class="text-right"><span class="text-red-400">${ToBRL(e.a)}</span><br><button onclick="DelExp(${e.id})" class="text-xs text-muted bg-transparent border-none">Excluir</button></div></div>`;}); $('exp-list').innerHTML=h; }
         function DelExp(id){ if(isVisitor)return; if(confirm('Apagar?')){exp=exp.filter(x=>x.id!=id);Save();RenderExp();} }
         function RenderTrash(){ let h=''; db.filter(c=>c.del).forEach(c=>{h+=`<div class="card flex justify-between p-2"><div><b>${c.name}</b></div><div class="flex"><button onclick="Restore(${c.id})" class="btn bg-green btn-sm">♻</button><button onclick="HardDelete(${c.id})" class="btn bg-red btn-sm">✖</button></div></div>`;}); $('trash-list').innerHTML=h||'<p class="text-center text-muted">Lixeira vazia.</p>'; }
         function Restore(id){ if(isVisitor)return alert('Bloqueado'); db.find(x=>x.id==id).del=false; Save(); RenderTrash(); Toast('Restaurado'); }
         function HardDelete(id){ if(isVisitor)return alert('Bloqueado'); if(confirm('Excluir PERMANENTEMENTE?')){db=db.filter(x=>x.id!=id);Save();RenderTrash();} }
-        function AddServer(){ if(isVisitor)return; let s=$('new-server').value; if(s){srv.push(s);Save();RenderSrvList();$('new-server').value='';} }
-        function RenderSrvList(){ $('server-list').innerHTML=srv.sort().map(s=>`<div class="flex justify-between p-2 border-b border-gray-700"><span>${s}</span><button onclick="if(!isVisitor){srv=srv.filter(x=>x!='${s}');Save();RenderSrvList()}" class="btn bg-red btn-sm">X</button></div>`).join(''); }
-        function RenderServerSelect(sel=''){ $('server-select-area').innerHTML=`<label>Servidor</label><select id="f-server-sel" class="input"><option value="">--</option>${srv.sort().map(s=>`<option value="${s}" ${s==sel?'selected':''}>${s}</option>`).join('')}</select>`; }
+        function AddServer(){ let s=$('new-server').value; if(s){srv.push(s);Save();RenderSrvList();$('new-server').value='';} }
+        function RenderSrvList(){ $('server-list').innerHTML=srv.map(s=>`<div class="flex justify-between p-2 border-b border-gray-700"><span>${s}</span><button onclick="if(!isVisitor){srv=srv.filter(x=>x!='${s}');Save();RenderSrvList()}" class="btn bg-red btn-sm">X</button></div>`).join(''); }
+        function RenderServerSelect(sel=''){ $('server-select-area').innerHTML=`<label>Servidor</label><select id="f-server-sel" class="input"><option value="">--</option>${srv.map(s=>`<option value="${s}" ${s==sel?'selected':''}>${s}</option>`).join('')}</select>`; }
         function Wpp(id){ let c=db.find(x=>x.id==id); if(!cfg.pix) return alert('Configure a chave PIX'); c.lastMsg=new Date().toISOString(); Save(); RenderHome(); let msg=cfg.msg.replace('{nome}',c.name).replace('{vencimento}',FmtDate(c.end)).replace('{valor}',ToBRL(c.price)).replace('{pix}',cfg.pix); window.open(`https://wa.me/${c.phone}?text=${encodeURIComponent(msg)}`); }
         
         function ResetMsg() { if(isVisitor)return; $('cfg-msg').value = DEFAULT_MSG; }
