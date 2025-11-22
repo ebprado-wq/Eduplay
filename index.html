@@ -2,12 +2,10 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
-    <title>Gestor EduPlay 14.1</title>
+    <title>Gestor EduPlay 15.0</title>
     
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/4207/4207247.png">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/4207/4207247.png">
 
     <style>
@@ -67,10 +65,12 @@
         .stat-num { font-size: 20px; font-weight: bold; display: block; } 
         .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
+        /* PERIOD SELECTOR FINANCE */
         .period-selector { display: flex; background: var(--border); border-radius: 8px; padding: 4px; margin-bottom: 15px; }
         .period-selector button { flex: 1; padding: 8px; border: none; border-radius: 6px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; }
         .period-selector button.active { background: var(--card); color: var(--text); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
+        /* META MENSAL */
         .goal-container { margin-top: 15px; padding: 10px; background: #020617; border-radius: 10px; border: 1px solid var(--border); }
         .goal-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
         .goal-bar-bg { height: 12px; background: var(--border); border-radius: 6px; overflow: hidden; position: relative; }
@@ -97,12 +97,12 @@
 </head>
 <body>
 
-    <div id="visitor-banner">👤 MODO OPERADOR (BACKUP BLOQUEADO)</div>
+    <div id="visitor-banner">👤 MODO OPERADOR (RESTRIÇÃO ATIVA)</div>
 
     <div id="screen-login" style="position: fixed; inset:0; background: var(--bg); z-index: 999; display: flex; align-items: center; justify-content: center;">
         <div class="card text-center" style="width: 300px; padding: 30px;">
             <div style="font-size: 48px; margin-bottom: 10px;">🔒</div>
-            <h2 class="mb-4">EduPlay v14.1</h2>
+            <h2 class="mb-4">EduPlay v15.0</h2>
             <input type="password" inputmode="numeric" pattern="[0-9]*" id="pin-input" class="input text-center" maxlength="4" placeholder="••••" style="font-size: 24px; letter-spacing: 8px; font-weight: bold;">
             <button onclick="Login()" class="btn bg-blue">ACESSAR SISTEMA</button>
             <p class="text-xs text-muted mt-4" style="opacity:0.6">Dev: EBPrado</p>
@@ -209,7 +209,7 @@
             <div class="card"><h3 class="mb-2 text-purple-400 text-xs uppercase font-bold">Backup & Segurança</h3><div class="flex mb-2"><button onclick="ExportData()" class="btn bg-blue" id="btn-download" style="flex:1">💾 Baixar Backup</button><button onclick="ExportExcel()" class="btn bg-green" id="btn-excel" style="flex:1">📊 Excel (.csv)</button></div><input type="file" id="import-input" class="hidden" onchange="ImportData(this)"><button onclick="$('import-input').click()" class="btn bg-slate" id="btn-restore">📂 Restaurar Backup</button></div>
             <div class="card" style="border-color: var(--red);"><h3 class="mb-2 text-red-400 text-xs uppercase font-bold">Zona de Perigo</h3><button onclick="Nav('trash')" class="btn bg-red">🗑️ Abrir Lixeira</button></div>
             <div class="card"><h3 class="mb-2 text-xs uppercase font-bold text-muted">Preferências</h3><label>Chave PIX</label><input id="cfg-pix" class="input"><label>Meta Mensal (R$)</label><input id="cfg-goal" class="input" type="number"><div id="div-password"><label>Senha PIN</label><input id="cfg-pin" class="input" type="tel" maxlength="4"></div><label>Modelo Mensagem</label><textarea id="cfg-msg" class="input" style="height:80px"></textarea><div class="flex mt-2"><button onclick="SaveConfig()" class="btn bg-blue" id="btn-save-cfg">Salvar</button><button onclick="ResetMsg()" class="btn bg-slate" style="width:auto" id="btn-reset-msg">Reset</button></div></div>
-            <div style="text-align:center; opacity:0.5; margin-top:20px; font-size:11px">Dev: EBPrado • v14.1</div>
+            <div style="text-align:center; opacity:0.5; margin-top:20px; font-size:11px">Dev: EBPrado • v15.0</div>
         </div>
 
         <div id="view-trash" class="hidden">
@@ -256,6 +256,10 @@
         const Diff = d => Math.ceil((new Date(d) - new Date().setHours(0,0,0,0)) / 86400000);
         const Save = () => { localStorage.setItem('edu_db',JSON.stringify(db)); localStorage.setItem('edu_exp',JSON.stringify(exp)); localStorage.setItem('edu_srv',JSON.stringify(srv)); localStorage.setItem('edu_cfg',JSON.stringify(cfg)); };
         const Toast = (m,t='blue') => { let el=document.createElement('div'); let cl=t==='orange'?'toast-orange':''; el.className=`toast ${cl} show`; if(t!='orange')el.style.borderLeftColor=`var(--${t})`; el.innerText=m; $('toast-container').appendChild(el); setTimeout(()=>el.remove(),3000); };
+
+        // PWA BLOCKER (v15 Logic)
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); return false; });
+        if('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(function(registrations) { for(let registration of registrations) { registration.unregister(); } }); }
 
         function Login() {
             const input = $('pin-input').value;
@@ -317,7 +321,7 @@
         function setFilter(m) { filterMode=m; RenderHome(); }
         function Nav(v) { document.querySelectorAll('[id^="view-"]').forEach(e => e.classList.add('hidden')); document.querySelectorAll('.nav-btn').forEach(e => e.classList.remove('active')); $(`view-${v}`).classList.remove('hidden'); const navMap = {'home':0,'finance':1,'expenses':2,'options':3,'trash':3}; if(document.querySelectorAll('.nav-btn')[navMap[v]]) document.querySelectorAll('.nav-btn')[navMap[v]].classList.add('active'); if(v==='home') RenderHome(); if(v==='finance') RenderFinance(); if(v==='expenses') RenderExp(); if(v==='trash') RenderTrash(); if(v==='options') { $('cfg-pix').value=cfg.pix; $('cfg-msg').value=cfg.msg; $('cfg-pin').value=cfg.pin; $('cfg-goal').value=cfg.monthlyGoal; RenderSrvList(); const l=localStorage.getItem('edu_logo'); if(l){$('header-logo').src=l;$('header-logo').classList.remove('hidden');} } }
 
-        // --- ACTIONS (LIBERADO PARA VISITANTE) ---
+        // --- ACTIONS ---
         function OpenForm() { curId=null; ['f-name','f-phone','f-obs','f-credit','f-price','f-cost'].forEach(i=>$(i).value=''); $('f-start').value=new Date().toISOString().split('T')[0]; AutoDate(); $('btn-delete-wrapper').classList.add('hidden'); RenderServerSelect(); CalcMargin(); Nav('form'); }
         function Edit(id) { curId=id; let c=db.find(x=>x.id==id); $('f-name').value=c.name; $('f-phone').value=c.phone; $('f-obs').value=c.obs||''; $('f-credit').value=c.credit||''; $('f-price').value=c.price; $('f-cost').value=c.cost; $('f-start').value=c.start; $('f-end').value=c.end; $('btn-delete-wrapper').classList.remove('hidden'); RenderServerSelect(c.srv); CalcMargin(); Nav('form'); }
         function CalcMargin() { let p=parseFloat($('f-price').value)||0, c=parseFloat($('f-cost').value)||0; $('f-margin').innerText = ToBRL(p-c); }
@@ -383,13 +387,13 @@
             let h=''; Object.keys(sMap).forEach(k=>{ let p=sMap[k].r-sMap[k].c; h+=`<div class="flex justify-between p-2 mb-1 bg-slate" style="border-radius:4px;font-size:12px"><span>${k}</span><span style="color:${p>=0?'var(--green)':'var(--red)'}">${ToBRL(p)}</span></div>`; }); $('fin-servers').innerHTML=h;
         }
 
-        function AddExpense(){ let d=$('exp-desc').value, a=parseFloat($('exp-amt').value), dt=$('exp-date').value; if(d&&a&&dt){exp.push({id:Date.now(),d:dt,a:a,desc:d});Save();$('exp-desc').value='';$('exp-amt').value='';RenderExp();Toast('Salvo');} }
+        function AddExpense(){ if(isVisitor)return; let d=$('exp-desc').value, a=parseFloat($('exp-amt').value), dt=$('exp-date').value; if(d&&a&&dt){exp.push({id:Date.now(),d:dt,a:a,desc:d});Save();$('exp-desc').value='';$('exp-amt').value='';RenderExp();Toast('Salvo');} }
         function RenderExp(){ let h=''; exp.sort((a,b)=>new Date(b.d)-new Date(a.d)).forEach(e=>{h+=`<div class="card flex justify-between p-2"><div><b>${e.desc}</b><br><span class="text-xs text-muted">${FmtDate(e.d)}</span></div><div class="text-right"><span class="text-red-400">${ToBRL(e.a)}</span><br><button onclick="DelExp(${e.id})" class="text-xs text-muted bg-transparent border-none">Excluir</button></div></div>`;}); $('exp-list').innerHTML=h; }
         function DelExp(id){ if(isVisitor)return; if(confirm('Apagar?')){exp=exp.filter(x=>x.id!=id);Save();RenderExp();} }
         function RenderTrash(){ let h=''; db.filter(c=>c.del).forEach(c=>{h+=`<div class="card flex justify-between p-2"><div><b>${c.name}</b></div><div class="flex"><button onclick="Restore(${c.id})" class="btn bg-green btn-sm">♻</button><button onclick="HardDelete(${c.id})" class="btn bg-red btn-sm">✖</button></div></div>`;}); $('trash-list').innerHTML=h||'<p class="text-center text-muted">Lixeira vazia.</p>'; }
         function Restore(id){ if(isVisitor)return alert('Bloqueado'); db.find(x=>x.id==id).del=false; Save(); RenderTrash(); Toast('Restaurado'); }
         function HardDelete(id){ if(isVisitor)return alert('Bloqueado'); if(confirm('Excluir PERMANENTEMENTE?')){db=db.filter(x=>x.id!=id);Save();RenderTrash();} }
-        function AddServer(){ let s=$('new-server').value; if(s){srv.push(s);Save();RenderSrvList();$('new-server').value='';} }
+        function AddServer(){ if(isVisitor)return; let s=$('new-server').value; if(s){srv.push(s);Save();RenderSrvList();$('new-server').value='';} }
         function RenderSrvList(){ $('server-list').innerHTML=srv.map(s=>`<div class="flex justify-between p-2 border-b border-gray-700"><span>${s}</span><button onclick="if(!isVisitor){srv=srv.filter(x=>x!='${s}');Save();RenderSrvList()}" class="btn bg-red btn-sm">X</button></div>`).join(''); }
         function RenderServerSelect(sel=''){ $('server-select-area').innerHTML=`<label>Servidor</label><select id="f-server-sel" class="input"><option value="">--</option>${srv.map(s=>`<option value="${s}" ${s==sel?'selected':''}>${s}</option>`).join('')}</select>`; }
         function Wpp(id){ let c=db.find(x=>x.id==id); if(!cfg.pix) return alert('Configure a chave PIX'); c.lastMsg=new Date().toISOString(); Save(); RenderHome(); let msg=cfg.msg.replace('{nome}',c.name).replace('{vencimento}',FmtDate(c.end)).replace('{valor}',ToBRL(c.price)).replace('{pix}',cfg.pix); window.open(`https://wa.me/${c.phone}?text=${encodeURIComponent(msg)}`); }
