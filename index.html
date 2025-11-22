@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Gestor EduPlay 14.0</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/4207/4207247.png">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/4207/4207247.png">
+
+    <style>
+        :root { 
+            --bg: #0f172a; --card: #1e293b; --border: #334155; 
+            --text: #f8fafc; --muted: #94a3b8; 
+            --blue: #3b82f6; --green: #22c55e; --red: #ef4444; 
+            --orange: #f97316; --purple: #a855f7; 
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { background: var(--bg); color: var(--text); padding-bottom: calc(90px + env(safe-area-inset-bottom)); font-size: 14px; user-select: none; }
+        
+        .hidden { display: none !important; }
+        .flex { display: flex; gap: 10px; align-items: center; }
+        .flex-col { display: flex; flex-direction: column; gap: 10px; }
+        .justify-between { justify-content: space-between; }
+        .w-full { width: 100%; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-xs { font-size: 12px; }
+        .font-bold { font-weight: 600; }
+        .p-4 { padding: 16px; }
+        .mb-2 { margin-bottom: 8px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        
+        .card { background: var(--card); padding: 16px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: transform 0.2s; }
+        .btn { border: none; padding: 12px; border-radius: 10px; font-weight: 600; color: white; width: 100%; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px; transition: 0.2s; font-size: 14px; }
+        .btn:active { transform: scale(0.96); opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(100%); background: #334155 !important; color: #94a3b8 !important; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; width: auto; }
+        
+        .bg-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .bg-green { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .bg-red { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid var(--red); }
+        .bg-slate { background: var(--border); color: var(--text); }
+        
+        .input { width: 100%; background: #020617; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 16px; transition: border-color 0.2s; }
+        .input:focus { border-color: var(--blue); }
+        .input.error { border-color: var(--red); animation: shake 0.3s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        
+        .tag { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .tag-ok { background: rgba(34,197,94,0.15); color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+        .tag-warn { background: rgba(249,115,22,0.15); color: #fdba74; border: 1px solid rgba(249,115,22,0.3); }
+        .tag-danger { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+
+        .header { position: sticky; top: 0; z-index: 40; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 15px; height: 65px; display: flex; justify-content: space-between; align-items: center; padding-top: max(15px, env(safe-area-inset-top)); }
+        .app-logo { height: 32px; width: auto; border-radius: 6px; margin-right: 10px; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; z-index: 50; background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(10px); border-top: 1px solid var(--border); padding: 8px 0; display: flex; justify-content: space-around; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+        .nav-btn { background: none; border: none; color: var(--muted); font-size: 22px; padding: 5px 15px; display: flex; flex-direction: column; align-items: center; transition: 0.2s; position: relative; }
+        .nav-btn span { font-size: 10px; margin-top: 2px; font-weight: 500; }
+        .nav-btn.active { color: var(--blue); transform: translateY(-4px); }
+        .nav-btn .dot { position: absolute; top: 5px; right: 15px; width: 8px; height: 8px; background: var(--red); border-radius: 50%; display: none; box-shadow: 0 0 5px var(--red); }
+
+        .dash-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .stat-num { font-size: 20px; font-weight: bold; display: block; } 
+        .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* PERIOD SELECTOR FINANCE */
+        .period-selector { display: flex; background: var(--border); border-radius: 8px; padding: 4px; margin-bottom: 15px; }
+        .period-selector button { flex: 1; padding: 8px; border: none; border-radius: 6px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; }
+        .period-selector button.active { background: var(--card); color: var(--text); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+        /* META MENSAL */
+        .goal-container { margin-top: 15px; padding: 10px; background: #020617; border-radius: 10px; border: 1px solid var(--border); }
+        .goal-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
+        .goal-bar-bg { height: 12px; background: var(--border); border-radius: 6px; overflow: hidden; position: relative; }
+        .goal-bar-fill { height: 100%; background: linear-gradient(90deg, #22c55e, #3b82f6); width: 0%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 60; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--card); width: 100%; max-width: 400px; padding: 24px; border-radius: 20px; border: 1px solid var(--border); animation: slideUp 0.3s; max-height: 90vh; overflow-y: auto; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        #toast-container { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 100; width: 90%; max-width: 400px; pointer-events: none; }
+        .toast { background: var(--card); color: white; padding: 12px 16px; border-radius: 10px; border-left: 4px solid var(--blue); box-shadow: 0 8px 16px rgba(0,0,0,0.5); margin-top: 10px; opacity: 0; transform: translateY(10px); transition: 0.3s; display: flex; align-items: center; font-weight: 500; backdrop-filter: blur(10px); }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast-orange { border-left-color: var(--orange); }
+
+        .chart-area { display: flex; height: 120px; align-items: flex-end; gap: 15px; padding-top: 20px; justify-content: center; }
+        .bar-group { width: 60px; display: flex; flex-direction: column; align-items: center; }
+        .bar { width: 100%; border-radius: 6px 6px 0 0; transition: height 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); min-height: 4px; }
+        
+        #visitor-banner { background: var(--orange); color: #fff; text-align: center; padding: 6px; font-size: 11px; font-weight: bold; position: fixed; top: 0; width: 100%; z-index: 100; display: none; padding-top: max(6px, env(safe-area-inset-top)); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
+        .hist-item { border-bottom: 1px solid var(--border); padding: 12px 0; display: flex; justify-content: space-between; align-items: center; }
+        .hist-item:last-child { border-bottom: none; }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+    </style>
+</head>
+<body>
+
+    <div id="visitor-banner">👤 MODO OPERADOR (RESTRIÇÃO ATIVA)</div>
+
+    <div id="screen-login" style="position: fixed; inset:0; background: var(--bg); z-index: 999; display: flex; align-items: center; justify-content: center;">
+        <div class="card text-center" style="width: 300px; padding: 30px;">
+            <div style="font-size: 48px; margin-bottom: 10px;">🔒</div>
+            <h2 class="mb-4">EduPlay v14.0</h2>
+            <input type="password" inputmode="numeric" pattern="[0-9]*" id="pin-input" class="input text-center" maxlength="4" placeholder="••••" style="font-size: 24px; letter-spacing: 8px; font-weight: bold;">
+            <button onclick="Login()" class="btn bg-blue">ACESSAR SISTEMA</button>
+            <p class="text-xs text-muted mt-4" style="opacity:0.6">Dev: EBPrado</p>
+        </div>
+    </div>
+
+    <div id="history-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between mb-4"><h3 id="hist-title">Histórico</h3><button onclick="$('history-modal').style.display='none'" class="btn bg-red btn-sm" style="width:auto">✕</button></div>
+            <div id="hist-list" class="flex-col"></div>
+        </div>
+    </div>
+
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="mb-4 text-center">Registrar Pagamento (PIX)</h3>
+            <div id="credit-alert" class="hidden text-center p-3 mb-4 text-xs bg-slate" style="border:1px dashed var(--purple); color:var(--purple); border-radius: 8px;">
+                🎁 Crédito disponível: <b>R$ <span id="credit-val">0</span></b>
+            </div>
+            <input type="hidden" id="pm-id">
+            
+            <label class="text-xs text-muted">1. Período Renovação</label>
+            <select id="pm-period" class="input" onchange="CalcPayment()">
+                <option value="1">1 Mês</option><option value="3">3 Meses</option><option value="6">6 Meses</option><option value="12">12 Meses</option>
+            </select>
+
+            <div class="flex">
+                <div class="w-full"><label class="text-xs text-muted">2. Valor (R$)</label><input id="pm-amount" class="input" type="number" inputmode="decimal"></div>
+                <div class="w-full"><label class="text-xs text-muted">3. Data</label><input id="pm-date" class="input" type="date"></div>
+            </div>
+            <label class="text-xs text-muted">4. Custo (Ativação/Renovação)</label>
+            <select id="pm-cost-type" class="input" onchange="CalcPayment()"><option value="renewal">Renovação (Padrão)</option><option value="activation">Ativação (Novo)</option><option value="none">Sem Custo</option></select>
+            
+            <div id="pm-summary" class="text-xs text-center text-muted mb-4 p-3 bg-slate" style="border-radius:8px; border: 1px dashed var(--border);"></div>
+            <div class="flex"><button onclick="$('payment-modal').style.display='none'" class="btn bg-slate">Cancelar</button><button onclick="ConfirmPayment()" class="btn bg-green" id="btn-confirm-pay">Confirmar</button></div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <div class="header container">
+        <div class="flex"><img id="header-logo" src="" class="app-logo hidden"><span class="font-bold text-blue-400" style="font-size: 18px;">EduPlay</span></div>
+        <div class="tag tag-ok" id="total-active">0 Ativos</div>
+    </div>
+
+    <div class="container p-4">
+        <div id="view-home">
+            <div class="dash-stats">
+                <div class="stat-box" onclick="setFilter('all')"><span class="stat-num" id="dash-total">0</span><span class="stat-label">Todos</span></div>
+                <div class="stat-box" onclick="setFilter('due_3')" style="border-color: var(--orange);"><span class="stat-num" id="dash-due" style="color: var(--orange);">0</span><span class="stat-label">Vencendo</span></div>
+                <div class="stat-box" onclick="setFilter('overdue')" style="border-color: var(--red);"><span class="stat-num" id="dash-over" style="color: var(--red);">0</span><span class="stat-label">Vencidos</span></div>
+            </div>
+            <div class="flex mb-2"><button onclick="OpenForm()" class="btn bg-blue" id="btn-new-client">➕ Novo Cliente</button><button onclick="Nav('finance')" class="btn bg-slate">💲 Caixa</button></div>
+            <select id="home-server-filter" class="input text-xs" style="padding: 8px; height: 42px;" onchange="RenderHome()"><option value="">📂 Todos os Servidores</option></select>
+            <input type="text" id="search" onkeyup="RenderHome()" class="input" placeholder="🔍 Buscar nome, telefone ou servidor..." style="padding-left: 15px;">
+            <div id="client-list" class="flex-col"></div>
+        </div>
+
+        <div id="view-finance" class="hidden">
+            <h2 class="mb-4">Análise Financeira</h2>
+            
+            <div class="period-selector">
+                <button id="period-month" class="active" onclick="SetFinMode('month')">Mensal</button>
+                <button id="period-year" onclick="SetFinMode('year')">Anual</button>
+            </div>
+
+            <div class="card flex justify-between p-2 mb-4 items-center">
+                <button onclick="ChangeTime(-1)" class="btn bg-slate btn-sm" style="width:40px">◀</button>
+                <span class="font-bold" id="fin-label" style="font-size:16px">...</span>
+                <button onclick="ChangeTime(1)" class="btn bg-slate btn-sm" style="width:40px">▶</button>
+            </div>
+            
+            <div class="card text-center" style="border-color: var(--green);">
+                <p class="text-xs text-green-400 font-bold tracking-wider">LUCRO LÍQUIDO</p>
+                <h1 id="fin-profit" style="font-size: 36px; color: var(--green); margin: 5px 0;">R$ 0,00</h1>
+                
+                <div class="goal-container">
+                    <div class="goal-header"><span>Meta: <span id="goal-target-txt">R$ 2.000</span></span><span id="goal-pct-txt">0%</span></div>
+                    <div class="goal-bar-bg"><div id="goal-fill" class="goal-bar-fill"></div></div>
+                </div>
+
+                <div class="chart-area mt-4"><div class="bar-group"><div id="bar-rev" class="bar bg-green"></div><span class="text-xs mt-1 text-muted">Rec</span></div><div class="bar-group"><div id="bar-cost" class="bar bg-red"></div><span class="text-xs mt-1 text-muted">Cus</span></div></div>
+                <div class="flex mt-4 text-xs justify-between pt-2" style="border-top: 1px solid var(--border);"><span class="text-green-400">Entrou: <b id="fin-rev">R$ 0</b></span><span class="text-red-400">Saiu: <b id="fin-cost">R$ 0</b></span></div>
+            </div>
+            
+            <h3 class="text-xs text-muted uppercase mt-4 mb-2 ml-1">Indicadores</h3>
+            <div class="dash-stats">
+                <div class="stat-box"><span class="stat-num text-sm" id="kpi-ticket">R$ 0</span><span class="stat-label">Ticket Médio</span></div>
+                <div class="stat-box"><span class="stat-num text-sm" id="kpi-mrr">R$ 0</span><span class="stat-label">MRR (Proj)</span></div>
+            </div>
+
+            <h3 class="text-xs text-muted uppercase mt-4 mb-2 ml-1">Por Servidor</h3>
+            <div id="fin-servers" class="flex-col"></div>
+        </div>
+
+        <div id="view-expenses" class="hidden">
+            <h2 class="mb-4">Despesas Extras</h2>
+            <div class="card"><input id="exp-desc" class="input" placeholder="Descrição (ex: Internet)"><div class="flex"><input id="exp-amt" type="number" inputmode="decimal" class="input" placeholder="Valor"><input id="exp-date" type="date" class="input"></div><button onclick="AddExpense()" class="btn bg-red" id="btn-add-exp">Lançar Saída</button></div>
+            <div id="exp-list" class="flex-col mt-4"></div>
+        </div>
+
+        <div id="view-options" class="hidden">
+            <div class="flex mb-4 justify-between items-center"><h2>Configurações</h2><button onclick="location.reload()" class="btn bg-red btn-sm" style="width:auto">Sair 🔒</button></div>
+            <div class="card flex items-center justify-between"><span class="font-bold">Logotipo</span><div class="flex"><input type="file" id="logo-input" class="hidden" accept="image/*" onchange="SaveLogo(this)"><button onclick="$('logo-input').click()" class="btn bg-blue btn-sm" id="btn-logo">Alterar</button><button onclick="ClearLogo()" class="btn bg-red btn-sm" id="btn-logo-del">✖</button></div></div>
+            <div class="card"><h3 class="mb-2 text-blue-400 text-xs uppercase font-bold">Servidores</h3><div class="flex mb-2"><input id="new-server" class="input" style="margin:0" placeholder="Nome"><button onclick="AddServer()" class="btn bg-green" style="width:auto" id="btn-add-srv">Add</button></div><div id="server-list" class="flex-col"></div></div>
+            <div class="card"><h3 class="mb-2 text-purple-400 text-xs uppercase font-bold">Backup & Segurança</h3><div class="flex mb-2"><button onclick="ExportData()" class="btn bg-blue" id="btn-download" style="flex:1">💾 Baixar Backup</button><button onclick="ExportExcel()" class="btn bg-green" id="btn-excel" style="flex:1">📊 Excel (.csv)</button></div><input type="file" id="import-input" class="hidden" onchange="ImportData(this)"><button onclick="$('import-input').click()" class="btn bg-slate" id="btn-restore">📂 Restaurar Backup</button></div>
+            <div class="card" style="border-color: var(--red);"><h3 class="mb-2 text-red-400 text-xs uppercase font-bold">Zona de Perigo</h3><button onclick="Nav('trash')" class="btn bg-red">🗑️ Abrir Lixeira</button></div>
+            <div class="card"><h3 class="mb-2 text-xs uppercase font-bold text-muted">Preferências</h3><label>Chave PIX</label><input id="cfg-pix" class="input"><label>Meta Mensal (R$)</label><input id="cfg-goal" class="input" type="number"><div id="div-password"><label>Senha PIN</label><input id="cfg-pin" class="input" type="tel" maxlength="4"></div><label>Modelo Mensagem</label><textarea id="cfg-msg" class="input" style="height:80px"></textarea><div class="flex mt-2"><button onclick="SaveConfig()" class="btn bg-blue" id="btn-save-cfg">Salvar</button><button onclick="ResetMsg()" class="btn bg-slate" style="width:auto" id="btn-reset-msg">Reset</button></div></div>
+            <div style="text-align:center; opacity:0.5; margin-top:20px; font-size:11px">Dev: EBPrado • v14.0</div>
+        </div>
+
+        <div id="view-trash" class="hidden">
+            <h2 class="mb-4 text-red-400">Lixeira</h2>
+            <div class="flex mb-4"><button onclick="Nav('options')" class="btn bg-slate">⬅ Voltar</button></div>
+            <div id="trash-list" class="flex-col"></div>
+        </div>
+
+        <div id="view-form" class="hidden">
+            <h2 id="form-title" class="mb-4">Cliente</h2>
+            <input type="hidden" id="f-id">
+            <div class="card"><label>Nome *</label><input id="f-name" class="input"><label>WhatsApp *</label><input id="f-phone" class="input" type="tel" maxlength="15" onkeyup="MaskPhone(this)"><div id="server-select-area"></div></div>
+            <div class="card" style="border-color: var(--purple);"><label>Observações</label><textarea id="f-obs" class="input" style="height:60px"></textarea><label style="color: var(--purple);">Crédito (Desconto)</label><input id="f-credit" type="number" inputmode="decimal" class="input"></div>
+            <div class="card"><div class="flex"><div class="w-full"><label class="text-green-400">Preço Venda</label><input id="f-price" type="number" inputmode="decimal" class="input" oninput="CalcMargin()"></div></div><div class="flex"><div class="w-full"><label class="text-red-400">Custo Unitário</label><input id="f-cost" type="number" inputmode="decimal" class="input" oninput="CalcMargin()"></div></div><div class="flex mt-2 p-2 bg-slate" style="border-radius:6px"><span class="text-xs">Lucro Mensal: <b id="f-margin" class="text-green-400">R$ 0,00</b></span></div></div>
+            <div class="card"><div class="flex"><div class="w-full"><label>Ativação</label><input id="f-start" type="date" class="input" onchange="AutoDate()"></div><div class="w-full"><label>Vencimento</label><input id="f-end" type="date" class="input"></div></div></div>
+            <div class="flex mt-4"><button onclick="Nav('home')" class="btn bg-slate">Cancelar</button><button onclick="SaveClient()" class="btn bg-blue" id="btn-save-cli">Salvar</button></div>
+            <div id="btn-delete-wrapper" class="hidden mt-4"><button onclick="SoftDelete()" class="btn bg-red" id="btn-del-soft">Mover para Lixeira</button></div>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <button onclick="Nav('home')" class="nav-btn active">👥<span>Clientes</span></button>
+        <button onclick="Nav('finance')" class="nav-btn">📊<span>Caixa</span></button>
+        <button onclick="Nav('expenses')" class="nav-btn">💸<span>Desp.</span></button>
+        <button onclick="Nav('options')" class="nav-btn">⚙️<span>Opções</span><div class="dot" id="backup-alert"></div></button>
+    </div>
+
+    <script>
+        const DEFAULT_MSG = "Olá *{nome}*!\n\nSeu plano vence dia *{vencimento}*.\nValor: *{valor}*\n\nPIX Copia e Cola:\n*{pix}*\n\nEnvie o comprovante!";
+        const HARDCODED_PIX = ""; 
+
+        let db = JSON.parse(localStorage.getItem('edu_db') || '[]');
+        let exp = JSON.parse(localStorage.getItem('edu_exp') || '[]');
+        let srv = JSON.parse(localStorage.getItem('edu_srv') || '[]');
+        let cfg = JSON.parse(localStorage.getItem('edu_cfg') || JSON.stringify({ pin: "2632", msg: DEFAULT_MSG, pix: HARDCODED_PIX, lastBackup: Date.now(), monthlyGoal: 2000 }));
+        
+        let curId=null, filterMode='all', financeDate=new Date(), isVisitor=false;
+        let financeMode = 'month'; // month or year
+
+        const $ = id => document.getElementById(id);
+        const ToBRL = v => Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+        const FmtDate = d => d ? d.split('-').reverse().join('/') : '-';
+        const AddMonth = (d,n) => { let x=new Date(d); x.setMonth(x.getMonth()+parseInt(n)); if(x.getDate()!=new Date(d).getDate())x.setDate(0); return x.toISOString().split('T')[0]; }
+        const Diff = d => Math.ceil((new Date(d) - new Date().setHours(0,0,0,0)) / 86400000);
+        const Save = () => { localStorage.setItem('edu_db',JSON.stringify(db)); localStorage.setItem('edu_exp',JSON.stringify(exp)); localStorage.setItem('edu_srv',JSON.stringify(srv)); localStorage.setItem('edu_cfg',JSON.stringify(cfg)); };
+        const Toast = (m,t='blue') => { let el=document.createElement('div'); let cl=t==='orange'?'toast-orange':''; el.className=`toast ${cl} show`; if(t!='orange')el.style.borderLeftColor=`var(--${t})`; el.innerText=m; $('toast-container').appendChild(el); setTimeout(()=>el.remove(),3000); };
+
+        function Login() {
+            const input = $('pin-input').value;
+            const VISITANTE = "2608"; 
+            if(input === cfg.pin || input === VISITANTE) { 
+                isVisitor = (input === VISITANTE);
+                $('screen-login').style.display='none'; Nav('home'); 
+                if(isVisitor) { Toast('Modo Operador', 'orange'); $('visitor-banner').style.display = 'block'; DisableDangerousActions(); }
+                CheckBackupAlert();
+            } else { $('pin-input').value=''; alert('Senha incorreta'); }
+        }
+        function DisableDangerousActions() {
+            const ids = ['btn-download', 'btn-restore', 'cfg-pin', 'btn-excel']; 
+            ids.forEach(id => { if($(id)) $(id).disabled = true; });
+            $('div-password').style.display = 'none';
+        }
+        function CheckBackupAlert() {
+            const days = Math.ceil((Date.now() - (cfg.lastBackup || 0)) / (1000 * 60 * 60 * 24));
+            if(days > 7) $('backup-alert').style.display = 'block'; else $('backup-alert').style.display = 'none';
+        }
+        function MaskPhone(input) {
+            let v = input.value.replace(/\D/g,'');
+            v = v.replace(/^(\d\d)(\d)/g,"($1) $2");
+            v = v.replace(/(\d{5})(\d)/,"$1-$2");
+            input.value = v.substring(0, 15);
+        }
+
+        function RenderHome() {
+            let term = $('search').value.toLowerCase();
+            let serverFilter = $('home-server-filter').value;
+            let activeDB = db.filter(c => !c.del); 
+            $('dash-total').innerText = activeDB.length;
+            $('dash-due').innerText = activeDB.filter(c => Diff(c.end)<=3 && Diff(c.end)>=0).length;
+            $('dash-over').innerText = activeDB.filter(c => Diff(c.end)<0).length;
+            $('total-active').innerText = activeDB.length + ' Ativos';
+
+            if($('home-server-filter').options.length === 1) { srv.sort().forEach(s => { let opt = document.createElement('option'); opt.value = s; opt.innerText = s; $('home-server-filter').appendChild(opt); }); }
+
+            let filtered = activeDB.filter(c => {
+                if (filterMode==='due_3' && (Diff(c.end)>3 || Diff(c.end)<0)) return false;
+                if (filterMode==='overdue' && Diff(c.end)>=0) return false;
+                if (serverFilter && c.srv !== serverFilter) return false;
+                return (c.name+c.srv+c.phone).toLowerCase().includes(term);
+            }).sort((a,b) => new Date(a.end) - new Date(b.end));
+
+            let html = '';
+            filtered.forEach(c => {
+                let d = Diff(c.end);
+                let color = d<0 ? 'tag-danger' : d<=3 ? 'tag-warn' : 'tag-ok';
+                let border = d<0 ? 'var(--red)' : d<=3 ? 'var(--orange)' : 'var(--green)';
+                let status = d<0 ? 'VENCIDO' : d + ' DIAS';
+                let wppClass = (c.lastMsg && Diff(c.lastMsg)===0) ? 'bg-slate style="opacity:0.5"' : 'bg-slate'; 
+                let wppTxt = (c.lastMsg && Diff(c.lastMsg)===0) ? '✔ Hoje' : '💬';
+
+                html += `<div class="card" style="border-left:4px solid ${border}"><div class="flex justify-between mb-2"><div><div class="font-bold">${c.name}</div><div class="text-xs text-muted">${c.srv||'-'}</div></div><div class="text-center"><span class="tag ${color}">${status}</span></div></div><div class="flex justify-between text-xs bg-slate p-2 mb-2" style="border-radius:6px"><span>Vence: <b>${FmtDate(c.end)}</b></span><span>${ToBRL(c.price)}</span></div><div class="flex"><button onclick="PayModal(${c.id})" class="btn bg-green" style="flex:2">💲 Pagar</button><button onclick="Wpp(${c.id})" class="btn ${wppClass}" style="flex:1">${wppTxt}</button><button onclick="OpenHistory(${c.id})" class="btn bg-slate" style="width:40px">📜</button><button onclick="Edit(${c.id})" class="btn bg-slate" style="width:40px">✏️</button></div></div>`;
+            });
+            $('client-list').innerHTML = html || '<div class="empty-state"><span style="font-size:40px">🍃</span><p>Nenhum cliente por aqui.</p></div>';
+        }
+        function setFilter(m) { filterMode=m; RenderHome(); }
+        function Nav(v) { document.querySelectorAll('[id^="view-"]').forEach(e => e.classList.add('hidden')); document.querySelectorAll('.nav-btn').forEach(e => e.classList.remove('active')); $(`view-${v}`).classList.remove('hidden'); const navMap = {'home':0,'finance':1,'expenses':2,'options':3,'trash':3}; if(document.querySelectorAll('.nav-btn')[navMap[v]]) document.querySelectorAll('.nav-btn')[navMap[v]].classList.add('active'); if(v==='home') RenderHome(); if(v==='finance') RenderFinance(); if(v==='expenses') RenderExp(); if(v==='trash') RenderTrash(); if(v==='options') { $('cfg-pix').value=cfg.pix; $('cfg-msg').value=cfg.msg; $('cfg-pin').value=cfg.pin; $('cfg-goal').value=cfg.monthlyGoal; RenderSrvList(); const l=localStorage.getItem('edu_logo'); if(l){$('header-logo').src=l;$('header-logo').classList.remove('hidden');} } }
+
+        // --- ACTIONS ---
+        function OpenForm() { if(isVisitor)return; curId=null; ['f-name','f-phone','f-obs','f-credit','f-price','f-cost'].forEach(i=>$(i).value=''); $('f-start').value=new Date().toISOString().split('T')[0]; AutoDate(); $('btn-delete-wrapper').classList.add('hidden'); RenderServerSelect(); CalcMargin(); Nav('form'); }
+        function Edit(id) { curId=id; let c=db.find(x=>x.id==id); $('f-name').value=c.name; $('f-phone').value=c.phone; $('f-obs').value=c.obs||''; $('f-credit').value=c.credit||''; $('f-price').value=c.price; $('f-cost').value=c.cost; $('f-start').value=c.start; $('f-end').value=c.end; $('btn-delete-wrapper').classList.remove('hidden'); RenderServerSelect(c.srv); CalcMargin(); Nav('form'); }
+        function CalcMargin() { let p=parseFloat($('f-price').value)||0, c=parseFloat($('f-cost').value)||0; $('f-margin').innerText = ToBRL(p-c); }
+        function SaveClient() {
+            if(isVisitor)return; let name=$('f-name').value; let ph=$('f-phone').value;
+            if(!name || !ph) { $('f-name').classList.add('error'); $('f-phone').classList.add('error'); setTimeout(()=>{$('f-name').classList.remove('error');$('f-phone').classList.remove('error')},1000); return Toast('Preencha Nome e WhatsApp', 'red'); }
+            let obj = { id:curId||Date.now(), name:name, phone:ph, srv:$('f-server-sel').value, obs:$('f-obs').value, credit:parseFloat($('f-credit').value)||0, price:parseFloat($('f-price').value)||0, cost:parseFloat($('f-cost').value)||0, start:$('f-start').value, end:$('f-end').value, pay:curId?db.find(x=>x.id==curId).pay:[], del:false, lastMsg:curId?db.find(x=>x.id==curId).lastMsg:null };
+            if(curId) db=db.map(x=>x.id==curId?obj:x); else db.push(obj); Save(); Toast('Salvo!'); Nav('home');
+        }
+        function AutoDate() { $('f-end').value = AddMonth($('f-start').value, 1); }
+        function SoftDelete() { if(isVisitor)return; if(confirm('Mover para Lixeira?')){db.find(x=>x.id==curId).del=true;Save();Toast('Na Lixeira');Nav('home');} }
+
+        function PayModal(id) { curId=id; let c=db.find(x=>x.id==id); $('pm-id').value=id; $('pm-period').value='1'; $('pm-date').value=new Date().toISOString().split('T')[0]; if(c.credit>0){$('credit-alert').classList.remove('hidden');$('credit-val').innerText=c.credit;}else $('credit-alert').classList.add('hidden'); $('payment-modal').style.display='flex'; CalcPayment(); }
+        function CalcPayment() { let c=db.find(x=>x.id==curId), p=parseInt($('pm-period').value), total=c.price*p, final=Math.max(0,total-(c.credit||0)), tCost=c.cost*p; $('pm-amount').value=final; $('pm-summary').innerHTML=`Receber: <b>${ToBRL(final)}</b> | Custo: <b>${ToBRL(tCost)}</b>`; }
+        function ConfirmPayment() {
+            if(isVisitor)return; let c=db.find(x=>x.id==curId), amt=parseFloat($('pm-amount').value), date=$('pm-date').value, period=parseInt($('pm-period').value), method='PIX';
+            if(!date)return; let tCost=c.cost*period, bruto=c.price*period; if(c.credit>0) c.credit=Math.max(0,c.credit-bruto);
+            c.pay.push({d:date, a:amt, c:tCost, m:method}); let base=new Date(c.end), payDt=new Date(date); if(base<payDt) base=payDt; c.end=AddMonth(base.toISOString().split('T')[0], period);
+            Save(); $('payment-modal').style.display='none'; Toast('Registrado!'); RenderHome();
+            if(confirm('Enviar recibo WhatsApp?')) { let msg = `🧾 *RECIBO*\nCliente: *${c.name}*\nServiço: *${c.srv}*\nValor: *${ToBRL(amt)}* (PIX)\nRef: *${period} Mês(es)*\nVencimento: *${FmtDate(c.end)}*\n✅ Pago!`; window.open(`https://wa.me/${c.phone}?text=${encodeURIComponent(msg)}`, '_blank'); }
+        }
+        function OpenHistory(id) { let c=db.find(x=>x.id==id), h=c.pay.length?'':'<div class="empty-state"><p>Sem histórico.</p></div>'; c.pay.sort((a,b)=>new Date(b.d)-new Date(a.d)).forEach(p=>{ h+=`<div class="hist-item"><div><b>${FmtDate(p.d)}</b><br><span class="text-xs text-muted">PIX</span></div><span class="text-green-400 font-bold">${ToBRL(p.a)}</span></div>`; }); $('hist-list').innerHTML=h; $('hist-title').innerText=c.name; $('history-modal').style.display='flex'; }
+
+        function SetFinMode(mode) { financeMode = mode; $('period-month').classList.remove('active'); $('period-year').classList.remove('active'); $(`period-${mode}`).classList.add('active'); RenderFinance(); }
+        function ChangeTime(n) { 
+            if(financeMode === 'month') financeDate.setMonth(financeDate.getMonth()+n);
+            else financeDate.setFullYear(financeDate.getFullYear()+n);
+            RenderFinance(); 
+        }
+        function RenderFinance() {
+            let m=financeDate.getMonth(), y=financeDate.getFullYear(), mNames=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+            $('fin-month-label').innerText = financeMode === 'month' ? `${mNames[m]} ${y}` : `${y}`;
+            let rev=0, cost=0, sMap={}, activeClients=0, mrr=0;
+            
+            db.forEach(c => { 
+                if(!c.del) { activeClients++; mrr+=c.price; }
+                let sn=c.srv||'Outros'; if(!sMap[sn])sMap[sn]={r:0,c:0}; 
+                c.pay.forEach(p => { 
+                    let parts=p.d.split('-'); 
+                    let match = (financeMode === 'month') ? (parseInt(parts[0])===y && parseInt(parts[1])===(m+1)) : (parseInt(parts[0])===y);
+                    if(match) { rev+=p.a; cost+=p.c; sMap[sn].r+=p.a; sMap[sn].c+=p.c; } 
+                }); 
+            });
+            exp.forEach(e => { 
+                let parts=e.d.split('-'); 
+                let match = (financeMode === 'month') ? (parseInt(parts[0])===y && parseInt(parts[1])===(m+1)) : (parseInt(parts[0])===y);
+                if(match) cost+=e.a; 
+            });
+            
+            let profit = rev - cost;
+            $('fin-profit').innerText=ToBRL(profit); $('fin-rev').innerText=ToBRL(rev); $('fin-cost').innerText=ToBRL(cost);
+            let max=Math.max(rev,cost,100); $('bar-rev').style.height=`${(rev/max)*100}%`; $('bar-cost').style.height=`${(cost/max)*100}%`;
+            
+            let avg = activeClients>0 ? (rev/activeClients) : 0; $('kpi-ticket').innerText = ToBRL(avg); $('kpi-mrr').innerText = ToBRL(mrr);
+            
+            // META LOGIC
+            let goal = cfg.monthlyGoal || 2000;
+            let pct = Math.min(100, Math.max(0, (profit / goal) * 100));
+            $('goal-target-txt').innerText = ToBRL(goal);
+            $('goal-pct-txt').innerText = Math.round(pct) + "%";
+            $('goal-fill').style.width = pct + "%";
+
+            let h=''; Object.keys(sMap).forEach(k=>{ let p=sMap[k].r-sMap[k].c; h+=`<div class="flex justify-between p-2 mb-1 bg-slate" style="border-radius:4px;font-size:12px"><span>${k}</span><span style="color:${p>=0?'var(--green)':'var(--red)'}">${ToBRL(p)}</span></div>`; }); $('fin-servers').innerHTML=h;
+        }
+
+        function AddExpense(){ if(isVisitor)return; let d=$('exp-desc').value, a=parseFloat($('exp-amt').value), dt=$('exp-date').value; if(d&&a&&dt){exp.push({id:Date.now(),d:dt,a:a,desc:d});Save();$('exp-desc').value='';$('exp-amt').value='';RenderExp();Toast('Salvo');} }
+        function RenderExp(){ let h=''; exp.sort((a,b)=>new Date(b.d)-new Date(a.d)).forEach(e=>{h+=`<div class="card flex justify-between p-2"><div><b>${e.desc}</b><br><span class="text-xs text-muted">${FmtDate(e.d)}</span></div><div class="text-right"><span class="text-red-400">${ToBRL(e.a)}</span><br><button onclick="DelExp(${e.id})" class="text-xs text-muted bg-transparent border-none">Excluir</button></div></div>`;}); $('exp-list').innerHTML=h; }
+        function DelExp(id){ if(isVisitor)return; if(confirm('Apagar?')){exp=exp.filter(x=>x.id!=id);Save();RenderExp();} }
+        function RenderTrash(){ let h=''; db.filter(c=>c.del).forEach(c=>{h+=`<div class="card flex justify-between p-2"><div><b>${c.name}</b></div><div class="flex"><button onclick="Restore(${c.id})" class="btn bg-green btn-sm">♻</button><button onclick="HardDelete(${c.id})" class="btn bg-red btn-sm">✖</button></div></div>`;}); $('trash-list').innerHTML=h||'<p class="text-center text-muted">Lixeira vazia.</p>'; }
+        function Restore(id){ if(isVisitor)return alert('Bloqueado'); db.find(x=>x.id==id).del=false; Save(); RenderTrash(); Toast('Restaurado'); }
+        function HardDelete(id){ if(isVisitor)return alert('Bloqueado'); if(confirm('Excluir PERMANENTEMENTE?')){db=db.filter(x=>x.id!=id);Save();RenderTrash();} }
+        function AddServer(){ if(isVisitor)return; let s=$('new-server').value; if(s){srv.push(s);Save();RenderSrvList();$('new-server').value='';} }
+        function RenderSrvList(){ $('server-list').innerHTML=srv.sort().map(s=>`<div class="flex justify-between p-2 border-b border-gray-700"><span>${s}</span><button onclick="if(!isVisitor){srv=srv.filter(x=>x!='${s}');Save();RenderSrvList()}" class="btn bg-red btn-sm">X</button></div>`).join(''); }
+        function RenderServerSelect(sel=''){ $('server-select-area').innerHTML=`<label>Servidor</label><select id="f-server-sel" class="input"><option value="">--</option>${srv.sort().map(s=>`<option value="${s}" ${s==sel?'selected':''}>${s}</option>`).join('')}</select>`; }
+        function Wpp(id){ let c=db.find(x=>x.id==id); if(!cfg.pix) return alert('Configure a chave PIX'); c.lastMsg=new Date().toISOString(); Save(); RenderHome(); let msg=cfg.msg.replace('{nome}',c.name).replace('{vencimento}',FmtDate(c.end)).replace('{valor}',ToBRL(c.price)).replace('{pix}',cfg.pix); window.open(`https://wa.me/${c.phone}?text=${encodeURIComponent(msg)}`); }
+        
+        function ResetMsg() { if(isVisitor)return; $('cfg-msg').value = DEFAULT_MSG; }
+        function SaveConfig() { if(isVisitor)return; cfg.pix=$('cfg-pix').value; cfg.msg=$('cfg-msg').value; cfg.monthlyGoal=parseFloat($('cfg-goal').value)||2000; if($('cfg-pin').value.length==4)cfg.pin=$('cfg-pin').value; Save(); Toast('Salvo'); }
+        function SaveLogo(i){ if(isVisitor)return; let f=i.files[0]; if(f.size>2000000){alert('< 2MB');return;} let r=new FileReader(); r.onload=e=>{localStorage.setItem('edu_logo',e.target.result);location.reload()}; r.readAsDataURL(f); }
+        function ClearLogo(){ if(isVisitor)return; localStorage.removeItem('edu_logo'); location.reload(); }
+        
+        // EXCEL EXPORT
+        function ExportExcel() {
+            if(isVisitor) return alert('Bloqueado');
+            let csvContent = "data:text/csv;charset=utf-8,Nome,WhatsApp,Servidor,Vencimento,Valor,Status\n";
+            db.forEach(c => {
+                let st = c.del ? "Excluído" : "Ativo";
+                csvContent += `${c.name},${c.phone},${c.srv},${FmtDate(c.end)},${c.price},${st}\n`;
+            });
+            let enc = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", enc);
+            link.setAttribute("download", "clientes_eduplay.csv");
+            document.body.appendChild(link);
+            link.click();
+        }
+
+        function ExportData(){ 
+            if(isVisitor) return alert('Bloqueado'); 
+            cfg.lastBackup = Date.now(); Save(); CheckBackupAlert(); 
+            let a=document.createElement('a'); 
+            a.href=URL.createObjectURL(new Blob([JSON.stringify({db,exp,srv,cfg})],{type:'application/json'})); 
+            a.download=`backup_edu_${new Date().toISOString().slice(0,10)}.json`; 
+            a.click(); 
+        }
+        function ImportData(i){ if(isVisitor)return alert('Bloqueado'); let r=new FileReader(); r.onload=e=>{try{let d=JSON.parse(e.target.result); db=d.db;exp=d.exp;srv=d.srv;cfg=d.cfg;Save();location.reload();}catch(e){alert('Erro');}}; r.readAsText(i.files[0]); }
+
+        window.onload = () => {
+            db = db.map(c => {
+                let finalCost = c.cost; if(finalCost===undefined) finalCost = Math.max(c.costA||0, c.costR||0);
+                return { ...c, name:c.name||c.n, phone:c.phone||c.ph, price:c.price||c.pr, cost:finalCost, start:c.start||c.dt, end:c.end||c.exp, srv:c.srv||c.s };
+            });
+            if(localStorage.getItem('edu_logo')) { $('header-logo').src=localStorage.getItem('edu_logo'); $('header-logo').classList.remove('hidden'); }
+            $('cfg-pix').value = cfg.pix; $('cfg-msg').value = cfg.msg; $('exp-date').value = new Date().toISOString().split('T')[0]; $('cfg-goal').value = cfg.monthlyGoal || 2000;
+            CheckBackupAlert();
+        }
+    </script>
+</body>
+</html>
